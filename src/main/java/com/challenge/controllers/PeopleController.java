@@ -6,6 +6,8 @@ import java.util.Map;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -18,8 +20,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.challenge.domain.ChallengeException;
 import com.challenge.domain.Message;
 import com.challenge.domain.People;
+import com.challenge.domain.Popular;
 import com.challenge.repo.PeopleRepository;
 
 @RestController
@@ -27,6 +31,8 @@ public class PeopleController {
 
 	@Autowired
 	PeopleRepository peopleRepository;
+	
+	private static final Logger logger= LoggerFactory.getLogger(PeopleController.class);
 	
 	@Context
 	protected SecurityContext sc;
@@ -39,7 +45,12 @@ public class PeopleController {
 	// Get all users in the application
 	@RequestMapping(value="/users", method=RequestMethod.GET)
 	public List<People> getUsers(){
-		return peopleRepository.findAll();
+		try {
+			return peopleRepository.findAll();
+		} catch (Exception e) {
+			logger.debug("Exception while processing getUsers()",e.getMessage());
+		}
+		return null;
 	}
 	
 	//Read message list of current user, with search parameter
@@ -80,6 +91,17 @@ public class PeopleController {
 	@RequestMapping(value="/unfollow/{person_id}", method=RequestMethod.DELETE)
 	public void unFollowUser(@PathVariable(value="person_id") Long person_id ){
 		peopleRepository.unfollow(getHandle(), person_id);
+	}
+	
+	// popular follower
+	@RequestMapping(value="/popular", method=RequestMethod.GET)
+	public List<Popular> popularList(){
+		try {
+			return peopleRepository.popular();
+		} catch (ChallengeException e) {
+			logger.debug(e.getMessage());
+		}
+		return null;
 	}
 	
 	private String getHandle() {

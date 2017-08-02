@@ -13,6 +13,7 @@ import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.session.SessionProperties.Jdbc;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
@@ -26,8 +27,10 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
+import com.challenge.domain.ChallengeException;
 import com.challenge.domain.Message;
 import com.challenge.domain.People;
+import com.challenge.domain.Popular;
 
 @Repository
 public class PeopleRepositoryImpl implements PeopleRepository{
@@ -47,7 +50,11 @@ public class PeopleRepositoryImpl implements PeopleRepository{
 	private static final String SQL_FIND_FOLLOWING_USER= "select p.handle, p.name from people p join followers f on p.id = f.person_id where f.follower_person_id =(select id from people where handle=:handle)";
 	private static final String SQL_START_FOLLOWING= "insert into followers(person_id, follower_person_id) values ((select id from people where handle=:handle), :follower_person_id)";
 	private static final String SQL_UNFOLLOW_USER= "delete from followers where person_id=(select id from people where handle=:handle) and follower_person_id=:follower_person_id";
-	
+		
+	private static final String SQL_FIND_POPULAR_FOLLOWER= "WITH X AS (select A.PERSON_ID, A.FOLLOWER_PERSON_ID, (SELECT COUNT(B.FOLLOWER_PERSON_ID) from followers B WHERE B.PERSON_ID = A.FOLLOWER_PERSON_ID) AS n FROM followers A ORDER BY A.PERSON_ID)" + 
+			" SELECT X.PERSON_ID, X.FOLLOWER_PERSON_ID FROM X" + 
+			" (SELECT person_id, max(N) maxN FROM X group by person_id ) AS Y" + 
+			" WHERE X.PERSON_ID= Y.person_id and X.N = Y.maxN";
 	
 	@Override
 	public List<People> findAll() {
@@ -116,25 +123,38 @@ public class PeopleRepositoryImpl implements PeopleRepository{
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("handle", handle);
 		params.addValue("follower_person_id", follower_person_id);
-		namedParameterJdbcTemplate.update(SQL_UNFOLLOW_USER, params );
+		namedParameterJdbcTemplate.update(SQL_UNFOLLOW_USER, params);
+	}
+	
+	@Override
+	public List<Popular> popular() throws ChallengeException{
+		try {
+			List<Popular> followers =  namedParameterJdbcTemplate.query(SQL_FIND_POPULAR_FOLLOWER, new PopularRowMapper());
+			return followers;
+		} catch (DataAccessException e) {
+			throw new ChallengeException("Exception in popular -> "+e.getMessage());
+		}
 	}
 	
 	private class CustomerRowMapper implements RowMapper<People>{
-
 		@Override
 		public People mapRow(ResultSet rs, int row) throws SQLException {
 			return new People(rs.getLong("id"), rs.getString("handle"), rs.getString("name"));
 		}
-		
 	}
 	
 	private class MessagesRowMapper implements RowMapper<Message>{
-
 		@Override
 		public Message mapRow(ResultSet rs, int row) throws SQLException {
 			return new Message(rs.getLong("id"), rs.getInt("person_id"), rs.getString("content"));
 		}
-		
+	}
+	
+	private class PopularRowMapper implements RowMapper<Popular>{
+		@Override
+		public Popular mapRow(ResultSet rs, int row) throws SQLException {
+			return new Popular(rs.getInt("person_id"),rs.getInt("FOLLOWER_PERSON_ID"));
+		}
 	}
 
 }

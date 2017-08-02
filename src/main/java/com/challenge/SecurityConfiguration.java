@@ -17,10 +17,24 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 		auth.authenticationProvider(authProvider);
     }
 	
+	// USE trhis while submitting 
 	@Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests().anyRequest().fullyAuthenticated();
+        http.authorizeRequests()
+        	.antMatchers("/h2-console/*").permitAll()
+        	.anyRequest().fullyAuthenticated();
         http.httpBasic();
         http.csrf().disable();
+        http.headers().frameOptions().disable();
     }
+	
+//	@Override
+//    protected void configure(HttpSecurity http) throws Exception {
+//        http.authorizeRequests()
+//            .antMatchers("/h2-console/*").permitAll()
+//            .anyRequest().authenticated();
+//
+//        http.csrf().disable();
+//        http.headers().frameOptions().disable();
+//    }
 }

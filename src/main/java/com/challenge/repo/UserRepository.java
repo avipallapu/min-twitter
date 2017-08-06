@@ -1,7 +1,11 @@
 package com.challenge.repo;
 
+import com.challenge.domain.User;
+
 public interface UserRepository {
 
-	boolean authenticate(String name, String password);
+	User findOneByUsernameAndPassword(String username, String password);
+
+	User findOneByUsername(String username);
 	
 }

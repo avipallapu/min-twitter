@@ -5,6 +5,9 @@
 //import org.springframework.boot.test.context.SpringBootTest;
 //import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 //import org.springframework.test.context.junit4.SpringRunner;
+//import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.*;
+//import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.*;
+//import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
 //
 //import com.challenge.config.Config;
 //import com.challenge.domain.Customer;

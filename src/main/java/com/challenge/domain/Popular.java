@@ -2,11 +2,11 @@ package com.challenge.domain;
 
 public class Popular {
 	private int id;
-	private int follower_id;
+	private int followerId;
 	
 	public Popular(int int1, int int2) {
 		this.id = int1;
-		this.follower_id = int2;
+		this.followerId = int2;
 	}
 	
 	public Popular(int int1) {
@@ -20,10 +20,10 @@ public class Popular {
 		this.id = id;
 	}
 	public int getFollower_id() {
-		return follower_id;
+		return followerId;
 	}
 	public void setFollower_id(int follower_id) {
-		this.follower_id = follower_id;
+		this.followerId = follower_id;
 	}
 	
 	

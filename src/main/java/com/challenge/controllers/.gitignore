@@ -1,0 +1,18 @@
+# IntelliJ Generated
+.idea
+*.iml
+
+# Client Dependency Generated
+client/node_modules/
+client/typings/
+client/node/
+
+# Server Generated
+server/build/
+
+# Typescript Compiler Generated
+client/app/**/*.js
+client/app/**/*.js.map
+
+# Gradle Generated
+.gradle/

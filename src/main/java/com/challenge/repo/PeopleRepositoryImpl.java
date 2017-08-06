@@ -45,16 +45,22 @@ public class PeopleRepositoryImpl implements PeopleRepository{
 	private static final String SQL_INSERT_NEW_USER_INTO_PEOPLE = "insert into people(id, handle, name) values (:id, :handle, :name)";
 	private static final String SQL_FIND_USERS_IN_APPLICATION = "select * from people order by id";
 	private static final String SQL_FIND_MESSAGES_CURRENT_USER= "select * from messages m join people p on m.person_id=p.id where p.id =(select id from people where handle=:handle)";
-	private static final String SQL_FIND_MESSAGES_CURRENT_USER_WITH_SEARCH_PARAMETER= "select * from messages m join people p on m.person_id=p.id where p.id =:id and m.content LIKE :search";
-	private static final String SQL_FIND_FOLLOWERS_OF_USER= "select p.handle, p.name from people p join followers f on p.id = f.follower_person_id where f.person_id =(select id from people where handle=:handle)";
-	private static final String SQL_FIND_FOLLOWING_USER= "select p.handle, p.name from people p join followers f on p.id = f.person_id where f.follower_person_id =(select id from people where handle=:handle)";
+	private static final String SQL_FIND_MESSAGES_CURRENT_USER_WITH_SEARCH_PARAMETER= "select * from messages m join people p on m.person_id=p.id where p.id =(select id from people where handle=:handle) and m.content LIKE :search";
+	private static final String SQL_FIND_FOLLOWERS_OF_USER= "select p.id,p.handle, p.name from people p join followers f on p.id = f.follower_person_id where f.person_id =(select id from people where handle=:handle)";
+	private static final String SQL_FIND_FOLLOWING_USER= "select p.id,p.handle, p.name from people p join followers f on p.id = f.person_id where f.follower_person_id =(select id from people where handle=:handle)";
 	private static final String SQL_START_FOLLOWING= "insert into followers(person_id, follower_person_id) values ((select id from people where handle=:handle), :follower_person_id)";
 	private static final String SQL_UNFOLLOW_USER= "delete from followers where person_id=(select id from people where handle=:handle) and follower_person_id=:follower_person_id";
 		
-	private static final String SQL_FIND_POPULAR_FOLLOWER= "WITH X AS (select A.PERSON_ID, A.FOLLOWER_PERSON_ID, (SELECT COUNT(B.FOLLOWER_PERSON_ID) from followers B WHERE B.PERSON_ID = A.FOLLOWER_PERSON_ID) AS n FROM followers A ORDER BY A.PERSON_ID)" + 
+	/*private static final String SQL_FIND_POPULAR_FOLLOWER= "WITH X AS (select A.PERSON_ID, A.FOLLOWER_PERSON_ID, (SELECT COUNT(B.FOLLOWER_PERSON_ID) from followers B WHERE B.PERSON_ID = A.FOLLOWER_PERSON_ID) AS n FROM followers A ORDER BY A.PERSON_ID) AS X" + 
 			" SELECT X.PERSON_ID, X.FOLLOWER_PERSON_ID FROM X" + 
 			" (SELECT person_id, max(N) maxN FROM X group by person_id ) AS Y" + 
-			" WHERE X.PERSON_ID= Y.person_id and X.N = Y.maxN";
+			" WHERE X.PERSON_ID= Y.person_id and X.N = Y.maxN";*/
+	
+	private static final String SQL_FIND_POPULAR_FOLLOWER = "SELECT X.PERSON_ID, X.FOLLOWER_PERSON_ID FROM (select A.PERSON_ID, A.FOLLOWER_PERSON_ID, (SELECT COUNT(B.FOLLOWER_PERSON_ID) from followers B WHERE B.PERSON_ID = A.FOLLOWER_PERSON_ID) AS N FROM followers A ORDER BY A.PERSON_ID) AS X" + 
+			" JOIN" + 
+			" (SELECT person_id, max(N) maxN FROM (select A.PERSON_ID, A.FOLLOWER_PERSON_ID, (SELECT COUNT(B.FOLLOWER_PERSON_ID) from followers B WHERE B.PERSON_ID = A.FOLLOWER_PERSON_ID) AS n FROM followers A ORDER BY A.PERSON_ID) group by person_id) AS Y" + 
+			" ON X.PERSON_ID= Y.person_id and X.N = Y.maxN ORDER BY X.PERSON_ID";
+	
 	
 	@Override
 	public List<People> findAll() {
@@ -153,7 +159,7 @@ public class PeopleRepositoryImpl implements PeopleRepository{
 	private class PopularRowMapper implements RowMapper<Popular>{
 		@Override
 		public Popular mapRow(ResultSet rs, int row) throws SQLException {
-			return new Popular(rs.getInt("person_id"),rs.getInt("FOLLOWER_PERSON_ID"));
+			return new Popular(rs.getInt("person_id"), rs.getInt("FOLLOWER_PERSON_ID"));
 		}
 	}
 

@@ -1,6 +1,7 @@
 package com.challenge.domain;
 
 public class People {
+	
 	private Long id;
 	
 	private String handle;
@@ -17,10 +18,24 @@ public class People {
 		this.name = name;
 	}
 	
+	public People(int id, String handle, String name) {
+		this.id = (long) id;
+		this.handle = handle;
+		this.name = name;
+	}
+	
 	public People(String handle, String name) {
 		super();
 		this.handle = handle;
 		this.name = name;
+	}
+	public People(String handle) {
+		super();
+		this.handle = handle;
+	}
+
+	public People(int id) {
+		this.id = (long) id;
 	}
 
 	public Long getId() {

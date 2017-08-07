@@ -1,5 +1,7 @@
 package com.challenge.domain;
 
+import java.util.List;
+
 public class Popular {
 	private int id;
 	private int followerId;
@@ -25,6 +27,5 @@ public class Popular {
 	public void setFollower_id(int follower_id) {
 		this.followerId = follower_id;
 	}
-	
 	
 }

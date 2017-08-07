@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,12 +19,8 @@ import com.challenge.service.UserService;
 @CrossOrigin(origins = "*")
 public class LoginController {
 
-    private final UserService userService;
-	
-    @Autowired
-    public LoginController(UserService userService) {
-        this.userService = userService;
-    }
+	@Autowired
+    private UserService userService;
 
     @RequestMapping(
             value = "/login",
@@ -35,15 +30,11 @@ public class LoginController {
     @CrossOrigin(origins = "*")
     public ResponseEntity<?> login(@RequestBody User user) {
         if (StringUtils.isEmpty(user.getUsername()) || StringUtils.isEmpty(user.getPassword())) {
-            return new ResponseEntity<>(new User(), HttpStatus.OK);
+            return new ResponseEntity<>("Username or password invalid", HttpStatus.NOT_FOUND);
         }
         if (userService.findUserByUsernameAndPassword(user.getUsername(), user.getPassword())==null){
-            return new ResponseEntity<>(new User(), HttpStatus.OK);
+            return new ResponseEntity<>(new User(), HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(userService.findUserByUsername(user.getUsername()), HttpStatus.OK);
     }
-
-	public void fillData() {
-		userService.fillData();
-	}
 }
